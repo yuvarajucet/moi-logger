@@ -40,13 +40,38 @@ def add_data():
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("INSERT INTO data (name, area, amount) VALUES (?, ?, ?)",
-                           (name, amt, area))
+                           (name, area, amt))
             conn.commit()
 
-        return jsonify({"message": "Data added successfully!"}), 200
+        data_response = get_data()
+        return data_response
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+@app.route('/get_data', methods=['GET'])
+def get_data():
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT s_no, name, area, amount FROM data")
+            rows = cursor.fetchall()
+
+            data_list = []
+            for row in rows:
+                data_list.append({
+                    's_no': row['s_no'],
+                    'name': row['name'],
+                    'area': row['area'],
+                    'amount': row['amount']
+                })
+
+        return jsonify({"data": data_list}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
 

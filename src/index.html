@@ -14,7 +14,6 @@
         <div class="row justify-content-center">
           <div class="col-md-6">
             <h1 class=""><u><b>Moi-Mangement system</b></u></h1>
-            <form>
                 <div class="mb-3">
                     <input type="text" class="form-control" id="name" placeholder="Name" required>
                 </div>
@@ -30,16 +29,43 @@
                 </select>
               </div>
               <div class="mb-3">
-                <button type="submit" class="btn btn-primary">Submit</button>
-                <button type="reset" class="btn btn-secondary">Reset</button>
+                <button type="submit" id="addbtn" class="btn btn-primary">Submit</button>
+                <button type="reset" id = "reset" class="btn btn-secondary">Reset</button>
               </div>
-            </form>
           </div>
+
+          <div class="container mt-5">
+            <h1>List of Data</h1>
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Name</th>
+                        <th>Amount</th>
+                        <th>Area</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody">
+                </tbody>
+            </table>
+        </div>
         </div>
       </div>
 
       <script>
         $(document).ready(function() {
+          $.ajax({
+            type: "GET",
+            url: "http://localhost:5000/get_data",
+            success: function(response) {
+              ManipulateData(response);
+            },
+            error: function(error) {
+                console.error("Error:", error);
+            }
+        });
+        });
+
           function submitForm() {
             const name = $("#name").val();
             const amt = $("#amt").val();
@@ -57,11 +83,9 @@
               data: JSON.stringify(data),
               contentType: 'application/json',
               success: function(response) {
-                debugger;
-                console.log("Success:", response);
+                ManipulateData(response);
               },
               error: function(error) {
-                debugger
                 console.error("Error:", error);
               }
             });
@@ -73,15 +97,38 @@
             $("#dropdownSelect").val("");
           }
       
-          $("form").on("submit", function(event) {
+          $("#addbtn").on("click", function(event) {
             event.preventDefault(); 
             submitForm();
           });
       
-          $("form").on("reset", function(event) {
+          $("#reset").on("click", function(event) {
             resetForm();
           });
-        });
+
+        function ManipulateData(response){
+          var tableBody = $("tbody");
+          var totalAmount = 0;
+          for(var i= response.data.length - 1; i >= 0; i--){
+            var tr = $("<tr></tr>");
+            var td_s = $("<td>"+response.data[i].s_no+"</td>");
+            var td_name = $("<td>"+response.data[i].name+"</td>");
+            var td_amt = $("<td>"+response.data[i].amount+"</td>");
+            var td_area = $("<td>"+response.data[i].area+"</td>");
+            tr.append(td_s);
+            tr.append(td_name);
+            tr.append(td_amt);
+            tr.append(td_area);
+            tableBody.append(tr);
+            totalAmount += response.data[i].amount;
+          }
+          var totalTr = $("<tr></tr>");
+          var total_Td = $("<td colspan=2>Total</td>");
+          var total_amt = $("<td colspan=2>"+totalAmount+"</td>");
+          totalTr.append(total_Td);
+          totalTr.append(total_amt);
+          tableBody.append(totalTr);
+        }
       </script>      
 </body>
 </html>
